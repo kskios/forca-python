@@ -1,5 +1,6 @@
 import tkinter as tk
 import random
+from PIL import Image, ImageTk
 
 # Lista de palavras
 palavras = ["PYTHON", "PROGRAMACAO", "ESTRUTURA", "ALGORITMO"]
@@ -26,6 +27,14 @@ def tentar_letras():
 
     # Pega a letra digitada
     letra = entrada_letra.get().upper()
+
+    # Verifica se foi digitado apenas uma letra
+    if len(letra) != 1 or not letra.isalpha():
+
+        mensagem.config(
+            text="⚠ Digite apenas uma letra! ⚠"
+        )
+        return
 
     # Verifica se a letra já foi usada
     if letra in letras_tentadas:
@@ -139,6 +148,27 @@ janela = tk.Tk()
 janela.title("Jogo da Forca")
 janela.geometry("900x600")
 janela.config(bg="#0f172a")
+
+# ----------------------------
+# PERSONAGEM
+# ----------------------------
+
+# Carrega sprite do personagem
+imagem_personagem = Image.open("anão.png")
+
+# Redimensiona 
+image_personagem = imagem_personagem.resize((220, 220))
+
+# Converte para formato do Tkinter
+sprite_personagem = ImageTk.PhotoImage(image_personagem)
+
+personagem_label = tk.Label(
+    janela,
+    image=sprite_personagem,
+    bg="#0f172a"
+)
+
+personagem_label.pack(pady=10)
 
 # ----------------------------
 # TÍTULO
@@ -269,4 +299,3 @@ atualizar_interface()
 
 # Mantém janela aberta
 janela.mainloop()
-
