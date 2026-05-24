@@ -27,6 +27,16 @@ def tentar_letras():
     # Pega a letra digitada
     letra = entrada_letra.get().upper()
 
+    # Verifica se a letra já foi usada
+    if letra in letras_tentadas:
+        mensagem.config(
+            text="⚠ Você já tentou essa letra! ⚠"
+            
+        )
+
+        return
+
+
     # Limpa campo
     entrada_letra.delete(0, tk.END)
 
@@ -90,6 +100,38 @@ def atualizar_interface():
 
 
 # ----------------------------
+# REINICIAR PARTIDA
+# ----------------------------
+
+def reiniciar_jogo():
+
+    global palavra_secreta
+    global palavra_oculta
+    global letras_tentadas
+    global tentativas_restantes
+
+    # Sorteia nova palavra
+    palavra_secreta = random.choice(palavras)
+
+    # Reinicia palavra oculta
+    palavra_oculta = ["_"] * len(palavra_secreta)
+
+    # Limpa letras usadas
+    letras_tentadas = set()
+
+    # Reinicia tentativas
+    tentativas_restantes = 6
+
+    # Limpa mensagem
+    mensagem.config(text="")
+
+    # Reativa o botão
+    botao.config(state="normal")
+
+    # Atualiza a tela
+    atualizar_interface()
+
+# ----------------------------
 # JANELA
 # ----------------------------
 
@@ -105,7 +147,7 @@ janela.config(bg="#0f172a")
 titulo = tk.Label(
     janela,
     text="⚔️ Jogo da Forca ⚔️",
-    font=("Arial", 28),
+    font=("Obitron", 28, "bold"),
     bg="#0f172a",
     fg="#00ffe1"
 )
@@ -119,7 +161,7 @@ titulo.pack(pady=20)
 palavra_label = tk.Label(
     janela,
     text=" ".join(palavra_oculta),
-    font=("Arial", 32),
+    font=("Obitron", 32, "bold"),
     bg="#0f172a",
     fg="#00ffe1"
 )
@@ -133,7 +175,7 @@ palavra_label.pack(pady=20)
 tentativas_label = tk.Label(
     janela,
     text=f"Tentativas restantes: {tentativas_restantes}",
-    font=("Arial", 16),
+    font=("Obitron", 16, "bold"),
     bg="#0f172a",
     fg="white"
 )
@@ -147,7 +189,7 @@ tentativas_label.pack()
 letras_label = tk.Label(
     janela,
     text="Letras usadas: ",
-    font=("Arial", 16),
+    font=("Obitron", 16, "bold"),
     bg="#0f172a",
     fg="white"
 )
@@ -160,7 +202,7 @@ letras_label.pack(pady=10)
 
 entrada_letra = tk.Entry(
     janela,
-    font=("Arial", 22),
+    font=("Obitron", 22, "bold"),
     width=5,
     justify="center"
 )
@@ -173,12 +215,40 @@ entrada_letra.pack(pady=20)
 
 botao = tk.Button(
     janela,
-    text="Enviar Letra",
-    font=("Arial", 16),
+    text="⚔️ Enviar ⚔️",
+    font=("Arial", 16, "bold"),
+    bg="#00ffe1",
+    fg="#0f172a",
+    activebackground="#00c8b4",
+    activeforeground="white",
+    relief="flat",
+    padx=20,
+    pady=10,
+    bd=0,
+    cursor="hand2",
     command=tentar_letras
 )
 
-botao.pack()
+botao.pack(pady=10)
+
+botao_reiniciar = tk.Button(
+    janela,
+    text="🔄 Reiniciar 🔄",
+    font=("Obitron", 16, "bold"),
+    bg="#a855f7",
+    fg="white",
+    activebackground="#9333ea",
+    activeforeground="white",
+    relief="flat",
+    padx=15,
+    pady=8,
+    bd=0,
+    cursor="hand2",
+    command=reiniciar_jogo
+)
+
+botao_reiniciar.pack(pady=10)
+
 
 # ----------------------------
 # MENSAGEM
@@ -187,7 +257,7 @@ botao.pack()
 mensagem = tk.Label(
     janela,
     text="",
-    font=("Arial", 18),
+    font=("Obitron", 18, "bold"),
     bg="#0f172a",
     fg="#00ffe1"
 )
