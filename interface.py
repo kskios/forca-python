@@ -1,16 +1,39 @@
 import tkinter as tk
 import random
 from PIL import Image, ImageTk
+import vlc
 
-# ----------------------------
+# ==================================================
+# MÚSICA
+# ==================================================
+
+player = vlc.MediaPlayer("assets/sounds/theme.mp3")
+player.audio_set_volume(45)
+
+
+def tocar_musica():
+    global player
+
+    player = vlc.MediaPlayer("assets/sounds/theme.mp3")
+    player.audio_set_volume(45)
+    player.play()
+
+
+# ==================================================
 # DADOS DO JOGO
-# ----------------------------
+# ==================================================
 
 palavras = [
     "PYTHON",
+    "ALGORITMO",
+    "BACKEND",
+    "FRONTEND",
+    "DATABASE",
+    "LINUX",
+    "CYBERSEC",
     "PROGRAMACAO",
     "ESTRUTURA",
-    "ALGORITMO"
+    "JAVASCRIPT"
 ]
 
 palavra_secreta = random.choice(palavras)
@@ -21,16 +44,51 @@ letras_tentadas = set()
 
 tentativas_restantes = 6
 
+# ==================================================
+# FUNÇÕES MENU
+# ==================================================
 
-# ----------------------------
-# TROCAR SPRITE
-# ----------------------------
 
-def trocar_sprite(caminho_imagem):
+def mostrar_menu():
+
+    frame_jogo.pack_forget()
+
+    frame_menu.pack(
+        fill="both",
+        expand=True
+    )
+
+
+def iniciar_partida():
+
+    frame_menu.pack_forget()
+
+    frame_jogo.pack(
+        fill="both",
+        expand=True
+    )
+
+
+def voltar_menu():
+
+    frame_jogo.pack_forget()
+
+    frame_menu.pack(
+        fill="both",
+        expand=True
+    )
+
+
+# ==================================================
+# SPRITES
+# ==================================================
+
+
+def trocar_sprite(caminho):
 
     global sprite_personagem
 
-    imagem = Image.open(caminho_imagem)
+    imagem = Image.open(caminho)
 
     imagem = imagem.resize((170, 170))
 
@@ -41,23 +99,23 @@ def trocar_sprite(caminho_imagem):
     personagem_label.image = sprite_personagem
 
 
-# ----------------------------
-# ATUALIZA SPRITE
-# ----------------------------
-
 def atualizar_sprite():
 
     # Vitória
     if "_" not in palavra_oculta:
+
         trocar_sprite("assets/dwarf_victory.png")
+
         return
 
     # Derrota
     if tentativas_restantes <= 0:
+
         trocar_sprite("assets/dwarf_gameover.png")
+
         return
 
-    # Estados normais
+    # Estados
     if tentativas_restantes == 6:
         trocar_sprite("assets/dwarf_idle.png")
 
@@ -77,9 +135,10 @@ def atualizar_sprite():
         trocar_sprite("assets/dwarf_hang_5.png")
 
 
-# ----------------------------
-# ATUALIZA INTERFACE
-# ----------------------------
+# ==================================================
+# INTERFACE
+# ==================================================
+
 
 def atualizar_interface():
 
@@ -88,11 +147,11 @@ def atualizar_interface():
     )
 
     letras_label.config(
-        text=f"Letras usadas: {', '.join(letras_tentadas)}"
+        text=f"Letras usadas: {', '.join(sorted(letras_tentadas))}"
     )
 
-    tentativas_label.config(
-        text=f"Tentativas restantes: {tentativas_restantes}"
+    vidas_label.config(
+        text="❤️ " * tentativas_restantes
     )
 
     atualizar_sprite()
@@ -101,7 +160,7 @@ def atualizar_interface():
     if "_" not in palavra_oculta:
 
         mensagem.config(
-            text="⚔️ Você salvou o guerreiro! ⚔️",
+            text="⚔ Você salvou o guerreiro! ⚔",
             fg="#00ff88"
         )
 
@@ -113,7 +172,7 @@ def atualizar_interface():
     elif tentativas_restantes <= 0:
 
         mensagem.config(
-            text=f"💀 O guerreiro foi derrotado! Palavra: {palavra_secreta}",
+            text=f"💀 Palavra: {palavra_secreta}",
             fg="#ff5555"
         )
 
@@ -122,47 +181,42 @@ def atualizar_interface():
         botao.config(state="disabled")
 
 
-# ----------------------------
-# FUNÇÃO PRINCIPAL
-# ----------------------------
+# ==================================================
+# GAMEPLAY
+# ==================================================
 
-def tentar_letras():
+
+def tentar_letra():
 
     global tentativas_restantes
 
-    # Impede jogadas após derrota
-    if tentativas_restantes <= 0:
-        return
-
     letra = entrada_letra.get().upper()
 
-    # Limpa input
     entrada_letra.delete(0, tk.END)
 
     # Validação
     if len(letra) != 1 or not letra.isalpha():
 
         mensagem.config(
-            text="⚠ Digite apenas UMA letra! ⚠",
+            text="⚠ Digite apenas UMA letra ⚠",
             fg="#ffaa00"
         )
 
         return
 
-    # Verifica repetição
+    # Letra repetida
     if letra in letras_tentadas:
 
         mensagem.config(
-            text="⚠ Essa letra já foi usada! ⚠",
+            text="⚠ Letra já utilizada ⚠",
             fg="#ffaa00"
         )
 
         return
 
-    # Adiciona letra
     letras_tentadas.add(letra)
 
-    # Acertou
+    # Acerto
     if letra in palavra_secreta:
 
         for indice, caractere in enumerate(palavra_secreta):
@@ -172,26 +226,27 @@ def tentar_letras():
                 palavra_oculta[indice] = letra
 
         mensagem.config(
-            text="⚔️ Você acertou!",
-            fg="#00ffe1"
+            text="⚔ Acertou ⚔",
+            fg="#00ffee"
         )
 
-    # Errou
+    # Erro
     else:
 
         tentativas_restantes -= 1
 
         mensagem.config(
-            text="❌ Você errou!",
+            text="❌ Você errou ❌",
             fg="#ff5555"
         )
 
     atualizar_interface()
 
 
-# ----------------------------
-# REINICIAR JOGO
-# ----------------------------
+# ==================================================
+# REINICIAR
+# ==================================================
+
 
 def reiniciar_jogo():
 
@@ -219,22 +274,133 @@ def reiniciar_jogo():
     atualizar_interface()
 
 
-# ----------------------------
+# ==================================================
 # JANELA
-# ----------------------------
+# ==================================================
 
 janela = tk.Tk()
 
 janela.title("Jogo da Forca")
 
-janela.geometry("900x700")
+janela.geometry("1100x900")
 
-janela.config(bg="#0f172a")
+janela.resizable(False, False)
 
+janela.config(bg="black")
 
-# ----------------------------
+# ==================================================
+# FRAMES
+# ==================================================
+
+frame_menu = tk.Frame(
+    janela,
+    bg="black"
+)
+
+frame_jogo = tk.Frame(
+    janela,
+    bg="black"
+)
+
+# ==================================================
+# BACKGROUND MENU
+# ==================================================
+
+imagem_menu = Image.open("assets/background_menu.png")
+
+imagem_menu = imagem_menu.resize((1100, 900))
+
+bg_menu = ImageTk.PhotoImage(imagem_menu)
+
+label_bg_menu = tk.Label(
+    frame_menu,
+    image=bg_menu
+)
+
+label_bg_menu.image = bg_menu
+
+label_bg_menu.place(
+    x=0,
+    y=0,
+    relwidth=1,
+    relheight=1
+)
+
+label_bg_menu.lower()
+
+# ==================================================
+# BACKGROUND GAMEPLAY
+# ==================================================
+
+imagem_jogo = Image.open("assets/background_game.png")
+
+imagem_jogo = imagem_jogo.resize((1100, 900))
+
+bg_jogo = ImageTk.PhotoImage(imagem_jogo)
+
+label_bg_jogo = tk.Label(
+    frame_jogo,
+    image=bg_jogo
+)
+
+label_bg_jogo.image = bg_jogo
+
+label_bg_jogo.place(
+    x=0,
+    y=0,
+    relwidth=1,
+    relheight=1
+)
+
+label_bg_jogo.lower()
+
+# ==================================================
+# MENU UI
+# ==================================================
+
+titulo_menu = tk.Label(
+    frame_menu,
+    text="⚔ JOGO DA FORCA ⚔",
+    font=("Orbitron", 38, "bold"),
+    fg="#00ffee",
+    bg="black"
+)
+
+titulo_menu.pack(pady=150)
+
+botao_jogar = tk.Button(
+    frame_menu,
+    text="⚔ JOGAR ⚔",
+    font=("Orbitron", 22, "bold"),
+    bg="#00ffee",
+    fg="black",
+    relief="flat",
+    padx=40,
+    pady=15,
+    cursor="hand2",
+    command=iniciar_partida
+)
+
+botao_jogar.pack(pady=20)
+
+botao_sair = tk.Button(
+    frame_menu,
+    text="✖ SAIR ✖",
+    font=("Orbitron", 18, "bold"),
+    bg="#a855f7",
+    fg="white",
+    relief="flat",
+    padx=30,
+    pady=12,
+    cursor="hand2",
+    command=janela.destroy
+)
+
+botao_sair.pack(pady=10)
+
+# ==================================================
 # PERSONAGEM
-# ----------------------------
+# ==================================================
 
 imagem_personagem = Image.open("assets/dwarf_idle.png")
 
@@ -243,81 +409,76 @@ imagem_personagem = imagem_personagem.resize((170, 170))
 sprite_personagem = ImageTk.PhotoImage(imagem_personagem)
 
 personagem_label = tk.Label(
-    janela,
+    frame_jogo,
     image=sprite_personagem,
-    bg="#0f172a"
+    bg="black"
 )
 
-personagem_label.pack(pady=5)
+personagem_label.pack(pady=20)
 
-
-# ----------------------------
+# ==================================================
 # TÍTULO
-# ----------------------------
+# ==================================================
 
 titulo = tk.Label(
-    janela,
-    text="⚔️ Jogo da Forca ⚔️",
-    font=("Orbitron", 28, "bold"),
-    bg="#0f172a",
-    fg="#00ffe1"
+    frame_jogo,
+    text="⚔ Jogo da Forca ⚔",
+    font=("Orbitron", 30, "bold"),
+    fg="#00ffee",
+    bg="black"
 )
 
 titulo.pack(pady=10)
 
-
-# ----------------------------
+# ==================================================
 # PALAVRA
-# ----------------------------
+# ==================================================
 
 palavra_label = tk.Label(
-    janela,
+    frame_jogo,
     text=" ".join(palavra_oculta),
-    font=("Orbitron", 36, "bold"),
-    bg="#0f172a",
-    fg="#00ffe1"
+    font=("Orbitron", 40, "bold"),
+    fg="#00ffee",
+    bg="black"
 )
 
-palavra_label.pack(pady=15)
+palavra_label.pack(pady=20)
 
+# ==================================================
+# VIDAS
+# ==================================================
 
-# ----------------------------
-# TENTATIVAS
-# ----------------------------
-
-tentativas_label = tk.Label(
-    janela,
-    text=f"Tentativas restantes: {tentativas_restantes}",
-    font=("Orbitron", 16, "bold"),
-    bg="#0f172a",
-    fg="white"
+vidas_label = tk.Label(
+    frame_jogo,
+    text="❤️❤️❤️❤️❤️❤️",
+    font=("Orbitron", 24, "bold"),
+    fg="#ff5555",
+    bg="black"
 )
 
-tentativas_label.pack()
+vidas_label.pack()
 
-
-# ----------------------------
+# ==================================================
 # LETRAS USADAS
-# ----------------------------
+# ==================================================
 
 letras_label = tk.Label(
-    janela,
+    frame_jogo,
     text="Letras usadas:",
-    font=("Orbitron", 16, "bold"),
-    bg="#0f172a",
-    fg="white"
+    font=("Orbitron", 18, "bold"),
+    fg="white",
+    bg="black"
 )
 
-letras_label.pack(pady=10)
+letras_label.pack(pady=15)
 
-
-# ----------------------------
+# ==================================================
 # INPUT
-# ----------------------------
+# ==================================================
 
 entrada_letra = tk.Entry(
-    janela,
-    font=("Orbitron", 22, "bold"),
+    frame_jogo,
+    font=("Orbitron", 24, "bold"),
     width=5,
     justify="center",
     relief="flat",
@@ -326,72 +487,94 @@ entrada_letra = tk.Entry(
 
 entrada_letra.pack(pady=10)
 
-
-# ----------------------------
+# ==================================================
 # BOTÃO ENVIAR
-# ----------------------------
+# ==================================================
 
 botao = tk.Button(
-    janela,
-    text="⚔️ Enviar ⚔️",
-    font=("Orbitron", 14, "bold"),
-    bg="#00ffe1",
-    fg="#0f172a",
-    activebackground="#00c8b4",
-    activeforeground="white",
+    frame_jogo,
+    text="⚔ ENVIAR ⚔",
+    font=("Orbitron", 16, "bold"),
+    bg="#00ffee",
+    fg="black",
     relief="flat",
-    padx=20,
+    padx=25,
     pady=10,
-    bd=0,
     cursor="hand2",
-    command=tentar_letras
+    command=tentar_letra
 )
 
 botao.pack(pady=10)
 
-
-# ----------------------------
+# ==================================================
 # BOTÃO REINICIAR
-# ----------------------------
+# ==================================================
 
 botao_reiniciar = tk.Button(
-    janela,
-    text="🔄 Reiniciar 🔄",
+    frame_jogo,
+    text="🔄 REINICIAR 🔄",
     font=("Orbitron", 16, "bold"),
     bg="#a855f7",
     fg="white",
-    activebackground="#9333ea",
-    activeforeground="white",
     relief="flat",
-    padx=15,
-    pady=8,
-    bd=0,
+    padx=20,
+    pady=10,
     cursor="hand2",
     command=reiniciar_jogo
 )
 
 botao_reiniciar.pack(pady=10)
 
+# ==================================================
+# BOTÃO MENU
+# ==================================================
 
-# ----------------------------
+botao_menu = tk.Button(
+    frame_jogo,
+    text="◄ MENU",
+    font=("Orbitron", 14, "bold"),
+    bg="#111827",
+    fg="#00ffee",
+    relief="flat",
+    padx=20,
+    pady=8,
+    cursor="hand2",
+    command=voltar_menu
+)
+
+botao_menu.pack(pady=10)
+
+# ==================================================
 # MENSAGEM
-# ----------------------------
+# ==================================================
 
 mensagem = tk.Label(
-    janela,
+    frame_jogo,
     text="",
     font=("Orbitron", 18, "bold"),
-    bg="#0f172a",
-    fg="#00ffe1"
+    fg="#00ffee",
+    bg="black"
 )
 
 mensagem.pack(pady=20)
 
+# ==================================================
+# ENTER
+# ==================================================
 
-# ----------------------------
+janela.bind(
+    "<Return>",
+    lambda event: tentar_letra()
+)
+
+# ==================================================
 # INICIALIZA
-# ----------------------------
+# ==================================================
 
 atualizar_interface()
+
+tocar_musica()
+
+mostrar_menu()
 
 janela.mainloop()
